@@ -7,8 +7,10 @@ import "./PriceConverter.sol";
 error NotOwner();
 
 contract FundMe {
+    //type declarations
     using PriceConverter for uint256;
 
+    //state variables
     mapping(address => uint256) public addressToAmountFunded;
     address[] public funders;
 

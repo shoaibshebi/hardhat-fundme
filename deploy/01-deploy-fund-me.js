@@ -5,6 +5,7 @@ const {
   networkConfig,
   developmentChains,
 } = require("../helper-hardhat-config");
+const { verify } = require("../utils/verify");
 
 //when `yarn hardhat deploy` script ran, it automatically pas the `hre` arguement
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -22,11 +23,21 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     ethUsdPriceFeedAddress = networkConfig[chainId].ethUsdPriceFeed;
   }
 
+  //fundMe will container deployed contract
+  const args = [ethUsdPriceFeedAddress];
   const fundMe = await deploy("FundMe", {
     from: deployer,
+    args: args,
     log: true,
-    args: [ethUsdPriceFeedAddress],
+    waitConfirmations: network.config.blockConfirmations || 1,
   });
+  if (
+    !developmentChains.includes(network.name) &&
+    process.env.ETHERSCAN_API_KEY
+  ) {
+    //verify checks, either the contract is already verified and published on the Etherscan/testnet or not
+    await verify(fundMe.address, [ethUsdPriceFeedAddress]);
+  }
   log(`Contract deployed on ${network.name}!`);
   log("----------------------- ");
 };
